@@ -1,0 +1,13 @@
+type Query {
+  jobs: [Job!]
+}
+
+type Job {
+  id: ID!
+  title: String!
+  """
+  The __date__ when the job was published, in ISO-8601. E.g. '2023-02-01'.
+  """
+  date: String!
+  description: String
+}
