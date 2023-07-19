@@ -22,15 +22,32 @@ export const resolvers = {
   },
 
   Mutation: {
-    createJob: (_root, {input: {title, description}}) => {
-      const companyId = 'FjcJCHJALA4i';
+    createJob: (_root, {input: {title, description}}, { user }) => {
+      if (!user) {
+        throw unauthorizedError('Missing authentication');
+      }
+      const companyId = user.companyId;
       return createJob({title, description, companyId});
     },
-    updateJob: (_root, { input: {id, title, description}}) => {
-      return updateJob({id, title, description});
+    updateJob: async (_root, { input: {id, title, description}}, { user }) => {
+      if (!user) {
+        throw unauthorizedError('Missing authentication');
+      }
+      const job = await updateJob({id, title, description, companyId: user.companyId});
+      if(!job) {
+        throw notFoundError('No job found with id ' + id);
+      }
+      return job;
     },
-    deleteJob: (_root, { id }) => {
-      return deleteJob(id);
+    deleteJob: async (_root, { id }, { user }) => {
+      if (!user) {
+        throw unauthorizedError('Missing authentication');
+      }
+      const job = await deleteJob(id, user.companyId);
+      if(!job) {
+        throw notFoundError('No job found with id ' + id);
+      }
+      return job;
     }
   },
 
@@ -52,4 +69,10 @@ function notFoundError(message) {
 
 function toIsoDate(value) {
   return value.slice(0, 'yyyy-mm-dd'.length);
+}
+
+function unauthorizedError(message) {
+  return new GraphQLError(message, {
+    extensions: { code: 'UNAUTHORIZED'}
+  })
 }
