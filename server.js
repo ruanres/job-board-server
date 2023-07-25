@@ -19,7 +19,7 @@ async function getContext({ req }) {
   const companyLoader = getCompanyLoader();
   const context = { companyLoader };
   if(req.auth) {
-    companyLoader.user = await getUser(req.auth.sub);
+    context.user = await getUser(req.auth.sub);
   }
   return context;
 }
